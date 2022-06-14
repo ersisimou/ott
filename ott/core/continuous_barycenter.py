@@ -123,10 +123,8 @@ class BarycenterState(NamedTuple):
     else:
       errors = None
     
-    divide_a = jnp.where(self.a > 0, 1.0 / self.a, 1.0)
-    convex_weights = matrices * divide_a[None, :, None]
     x_new = jnp.sum(
-      barycentric_projection(convex_weights, segmented_y, bar_prob.cost_fn)
+      barycentric_projection(matrices, segmented_y, bar_prob.cost_fn)
       * bar_prob.weights[:, None, None], axis=0)
     return self.set(costs=updated_costs,
                     linear_convergence=linear_convergence,
@@ -148,6 +146,7 @@ class WassersteinBarycenter(was_solver.WassersteinSolver):
       x_init: jnp.ndarray = None,      
       rng: int = 0
       ) -> BarycenterState:    
+      
     bar_fn = jax.jit(iterations, static_argnums=1) if self.jit else iterations
     out = bar_fn(self, bar_size, bar_prob, x_init, rng)
     return out
