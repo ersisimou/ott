@@ -167,7 +167,7 @@ class WassersteinBarycenter(was_solver.WassersteinSolver):
         p=bar_prob.flattened_b)
       x = bar_prob.flattened_y[indices_subset,:]
     
-    # TODO(cuturi) expand to non-uniform weights for barycenter.
+    # TODO(cuturi) expand to non-uniform weights for barycenter
     a = jnp.ones((bar_size,))/ bar_size
     num_iter = self.max_iterations
     if self.store_inner_errors:
