@@ -25,7 +25,7 @@ from ott.core import problems
 from ott.core import bar_problems
 from ott.core import was_solver
 from ott.geometry import pointcloud
-
+from ott.geometry.costs import Euclidean, Bures
 
 class BarycenterOutput(NamedTuple):
   """Holds the output of a Wasserstein Barycenter solver.
@@ -122,10 +122,11 @@ class BarycenterState(NamedTuple):
       errors = self.errors.at[iteration, :, :].set(errors)
     else:
       errors = None
-    
+  
     x_new = jnp.sum(
       barycentric_projection(matrices, segmented_y, bar_prob.cost_fn)
       * bar_prob.weights[:, None, None], axis=0)
+
     return self.set(costs=updated_costs,
                     linear_convergence=linear_convergence,
                     errors=errors,
@@ -134,6 +135,7 @@ class BarycenterState(NamedTuple):
 @functools.partial(jax.vmap, in_axes=[0, 0, None])
 def barycentric_projection(matrix, y, cost_fn):
   return jax.vmap(cost_fn.barycenter, in_axes=[0, None])(matrix, y)
+
 
 @jax.tree_util.register_pytree_node_class
 class WassersteinBarycenter(was_solver.WassersteinSolver):
@@ -157,6 +159,7 @@ class WassersteinBarycenter(was_solver.WassersteinSolver):
     if x_init is not None:
       assert bar_size == x_init.shape[0]
       x = x_init
+      
     else:
       # sample randomly points in the support of the y measures
       indices_subset = jax.random.choice(jax.random.PRNGKey(rng), 
